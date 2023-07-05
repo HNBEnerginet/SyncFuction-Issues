@@ -1,0 +1,120 @@
+﻿@page "/fetchdata"
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.Grids
+@inject HttpClient Http
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <SfGrid @ref="Grid"
+        class="data-grid"
+        data-test-id="data-grid"
+        TValue="WeatherForecast"
+        DataSource="forecasts"
+        AllowSorting="true"
+        AllowMultiSorting="false"
+        AllowPaging="true"
+        ShowColumnChooser="true"
+        AllowResizing="false"
+        GridLines="GridLine.Horizontal"
+        AllowTextWrap="true"
+        EnablePersistence="true"
+        RowHeight="50">
+        <GridPageSettings PageSize="50" />
+
+        <GridSelectionSettings PersistSelection="true" Mode="SelectionMode.Row" Type="Syncfusion.Blazor.Grids.SelectionType.Multiple" />
+        <GridEvents TValue="WeatherForecast" />
+        <GridSortSettings>
+            <GridSortColumns>
+                <GridSortColumn Field="@nameof(WeatherForecast.Date)" Direction="SortDirection.Ascending" />
+            </GridSortColumns>
+        </GridSortSettings>
+        <GridColumns>
+            <GridColumn Field="@nameof(WeatherForecast.Date)" HeaderText="Data" Width="200px" HeaderTextAlign="TextAlign.Right">
+                <Template>
+                    @{
+                        if (context is WeatherForecast forecast)
+                        {
+                            <span>@forecast.Date</span>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureC)" HeaderText="Temp. (C)" Width="200px" HeaderTextAlign="TextAlign.Right">
+                <Template>
+                    @{
+                        if (context is WeatherForecast forecast)
+                        {
+                            <span>@forecast.TemperatureC</span>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureF)" HeaderText="Temp. (F)" Width="200px" HeaderTextAlign="TextAlign.Right">
+                <Template>
+                    @{
+                        if (context is WeatherForecast forecast)
+                        {
+                            <span>@forecast.TemperatureF</span>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(WeatherForecast.Summary)" HeaderText="Summary" Width="200px" HeaderTextAlign="TextAlign.Right">
+                <Template>
+                    @{
+                        if (context is WeatherForecast forecast)
+                        {
+                            <span>@forecast.Summary</span>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="ColumnChooser" AllowSorting="false" Width="60" AllowResizing="false" ShowInColumnChooser="false" HeaderTextAlign="TextAlign.Center">
+                <HeaderTemplate>
+                    <SfButton CssClass="e-flat" OnClick="@OnColumnChooserClickedAsync" data-test-id="data-grid-column-chooser">
+                        <span class="oi oi-list-rich" aria-hidden="true"/>
+                    </SfButton>
+                </HeaderTemplate>
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+}
+
+@code {
+    private SfGrid<WeatherForecast> Grid { get; set; } = default!;
+
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    public async Task OnColumnChooserClickedAsync()
+    {
+        await InvokeAsync(() => Grid.OpenColumnChooserAsync(200, 200));
+    }
+}
